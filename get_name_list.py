@@ -1,8 +1,11 @@
 import json
 import urllib
-import unicodecsv as csv	# you need to install this
 import sys
 import os
+import unicodecsv as csv	# you need to install this
+							# required for writing into file in UNICODE
+
+########## SOME CONSTANTS ###########
 
 def const_RANK_JSON(rank_range):
 	return "all_rank_%s.json" % (rank_range)
@@ -13,24 +16,33 @@ def const_USER_JSON(device_id):
 def const_CSV_FILE_NAME(rank_range):
 	return "user_id_%s.csv" % (rank_range)
 
+def const_SS_IP():
+	return "150.109.0.114"
+
+#####################################
+
 # fetches all data from main rank
 def fetch_data_all(rank_range):
-	ss_ip = "150.109.0.114"
+	ss_ip = const_SS_IP()
 	ss_url = "http://%s/v/rank/list/%s/ALL"
 
 	full_url = ss_url % (ss_ip, rank_range)
 
 	urllib.urlretrieve(full_url, const_RANK_JSON(rank_range))
 
+	# file has been fetched
+
 # fetches data for a particular player
 # from the complete data, returns only the user ID
 def fetch_data_userid(device_id):
-	ss_ip = "150.109.0.114"
+	ss_ip = const_SS_IP()
 	ss_user_url = "http://%s/v/profile/%s"
 
 	full_user_url = ss_user_url % (ss_ip, device_id)
 
 	urllib.urlretrieve(full_user_url, const_USER_JSON(device_id))
+
+	# file has been fetched
 
 # gets the user ID for the current user
 def get_userid(device_id):
@@ -50,37 +62,32 @@ def get_ranks(rank_range):
 
 	l_name_dev = []
 
-	lim = 100
 	lim_cnt = 0
 
 	for i in json_dic["ranks"]:
-		# getting username and device ID of current user
-		tmp_data_extract = [i["username"], i["device"]]
+		# getting device id of the current user
+		user_dev_id = i["device"]
 
 		# fetching the complete data of the current user
-		fetch_data_userid(i["device"])
+		fetch_data_userid(user_dev_id)
 
 		# from the complete data of the user, getting only the user ID
-		curr_player_userid = get_userid(i["device"])
+		curr_player_userid = get_userid(user_dev_id)
 
-		tmp_data_extract.insert(0,curr_player_userid)
+		# creating the tuple for the current user
+		# more can be added but please append to this list
+		# to maintain compatibility
+		tmp_data_extract = [curr_player_userid, i["username"], user_dev_id]
 
+		# adding the tuple to the main list
 		l_name_dev.append(tmp_data_extract)
-
-		print tmp_data_extract
 
 		# deleting the user data json file once the work is done
 		os.remove(const_USER_JSON(i["device"]))
 
-		if lim_cnt < lim:
-			lim_cnt += 1
-		else:
-			break
+		lim_cnt += 1
 
-		print "rank " + str(lim_cnt) + " done"
-
-	for i in l_name_dev:
-		print i
+		print "Rank %s %s" % (str(lim_cnt), tmp_data_extract)
 
 	# writing the list in a csv file
 	fp = open(const_CSV_FILE_NAME(rank_range), 'wb')
@@ -88,9 +95,9 @@ def get_ranks(rank_range):
 	wr.writerows(l_name_dev)
 
 def main():	
-	ss_rank_range = ["1-100", "100-200", "201-300", "301-400", "401-500"]
+	ss_rank_range = ["1-100", "101-200", "201-300", "301-400", "401-500", "501-600", "601-700", "701-800", "801-900", "901-1000"]
 
-	# this should range from 0-4 inclusive
+	# this should range from 0-9 inclusive
 	rank_choice = int(sys.argv[1])
 
 	# fetches complete rank data
