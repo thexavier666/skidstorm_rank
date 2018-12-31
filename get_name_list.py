@@ -1,7 +1,7 @@
 import json
 import urllib
 import sys
-import os
+import os					# for deleting user json files
 import unicodecsv as csv	# you need to install this
 							# required for writing into file in UNICODE
 
@@ -44,7 +44,7 @@ def fetch_data_userid(device_id):
 
 	# file has been fetched
 
-# gets the user ID for the current user
+# gets the user ID for the current user from the json file
 def get_userid(device_id):
 	json_user_file_name = const_USER_JSON(device_id)
 
@@ -54,15 +54,21 @@ def get_userid(device_id):
 
 	return user_id
 
+# returns integer version of the string ranks
+def get_rank_range_integer(rank_range):
+	return map(int,rank_range.split("-"))
+
 # gets all ranks with userID and device ID
 def get_ranks(rank_range):
 	json_file_name = const_RANK_JSON(rank_range)
 
 	json_dic = json.load(open(json_file_name,'r'))
 
+	# list to store all the data
 	l_name_dev = []
 
-	lim_cnt = 0
+	# getting lower limit of the rank range in integer
+	lim_cnt = get_rank_range_integer(rank_range)[0]
 
 	for i in json_dic["ranks"]:
 		# getting device id of the current user
@@ -85,9 +91,9 @@ def get_ranks(rank_range):
 		# deleting the user data json file once the work is done
 		os.remove(const_USER_JSON(i["device"]))
 
-		lim_cnt += 1
-
 		print "Rank %s %s" % (str(lim_cnt), tmp_data_extract)
+
+		lim_cnt += 1
 
 	# writing the list in a csv file
 	fp = open(const_CSV_FILE_NAME(rank_range), 'wb')
@@ -95,17 +101,23 @@ def get_ranks(rank_range):
 	wr.writerows(l_name_dev)
 
 def main():	
-	ss_rank_range = ["1-100", "101-200", "201-300", "301-400", "401-500", "501-600", "601-700", "701-800", "801-900", "901-1000"]
 
-	# this should range from 0-9 inclusive
+	# input = 1 means rank 1-100
+	# input = 2 means rank 101-200 and so on
 	rank_choice = int(sys.argv[1])
+
+	# calculating rank limits
+	upper_lim = rank_choice * 100
+	lower_lim = upper_lim - 99
+
+	rank_range = "%d-%d" % (lower_lim,upper_lim)
 
 	# fetches complete rank data
 	# disable this line if you have already fetched the complete rank data once
-	fetch_data_all(ss_rank_range[rank_choice])
+	fetch_data_all(rank_range)
 
 	# extracting data from json
-	get_ranks(ss_rank_range[rank_choice])
+	get_ranks(rank_range)
 
 if __name__ == "__main__":
 	main()
