@@ -2,4 +2,4 @@
 *.csv
 *.swp
 tmp_code/*
-other_code/*
+other_data/*
