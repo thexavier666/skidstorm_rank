@@ -58,6 +58,18 @@ def get_userid(device_id):
 def get_rank_range_integer(rank_range):
 	return map(int,rank_range.split("-"))
 
+# calculates rank range from rank page number
+def get_rank_range_from_rank_choice(rank_choice):
+	
+	# calculating rank limits
+	upper_lim = rank_choice * 100
+	lower_lim = upper_lim - 99
+
+	rank_range = "%d-%d" % (lower_lim,upper_lim)
+
+	return rank_range
+	
+
 # gets all ranks with userID and device ID
 def get_ranks(rank_range):
 	json_file_name = const_RANK_JSON(rank_range)
@@ -83,7 +95,7 @@ def get_ranks(rank_range):
 		# creating the tuple for the current user
 		# more can be added but please append to this list
 		# to maintain compatibility
-		tmp_data_extract = [curr_player_userid, i["username"], user_dev_id]
+		tmp_data_extract = [curr_player_userid, i["username"], user_dev_id, i["country"],i["clanTag"],i["clanId"]]
 
 		# adding the tuple to the main list
 		l_name_dev.append(tmp_data_extract)
@@ -106,11 +118,7 @@ def main():
 	# input = 2 means rank 101-200 and so on
 	rank_choice = int(sys.argv[1])
 
-	# calculating rank limits
-	upper_lim = rank_choice * 100
-	lower_lim = upper_lim - 99
-
-	rank_range = "%d-%d" % (lower_lim,upper_lim)
+	rank_range = get_rank_range_from_rank_choice(rank_choice)
 
 	# fetches complete rank data
 	# disable this line if you have already fetched the complete rank data once
