@@ -2,3 +2,4 @@
 *.csv
 *.swp
 tmp_code/*
+other_code/*
