@@ -3,3 +3,4 @@
 *.swp
 tmp_code/*
 other_data/*
+data_*

@@ -2,17 +2,19 @@ import json
 import urllib
 import sys
 import os					# for deleting user json files
-import unicodecsv as csv	# you need to install this
-							# required for writing into file in UNICODE
+import unicodecsv as csv	# for writing spl. characters into file in UNICODE
 
 ########## SOME CONSTANTS ###########
 
+# returns file name of a certain rank range
 def const_RANK_JSON(rank_range):
 	return "all_rank_%s.json" % (rank_range)
 
+# returns file name of a user based on device ID
 def const_USER_JSON(device_id):
 	return "user_%s.json" % (device_id)
 
+# returns file name of user details of a certain rank range
 def const_CSV_FILE_NAME(rank_range):
 	return "user_id_%s.csv" % (rank_range)
 
@@ -92,12 +94,30 @@ def get_ranks(rank_range):
 		fetch_data_userid(user_dev_id)
 
 		# from the complete data of the user, getting only the user ID
-		curr_player_userid = get_userid(user_dev_id)
+		user_game_id = get_userid(user_dev_id)
 
+		user_name 		= i["username"]
+		clan_id 		= i["clanId"]
+		clan_tag 		= i["clanTag"]
+		user_country 	= i["country"]
+		user_trophy		= i["rank"]
+
+		# checking if the user belongs to a clan
+		if clan_id == None:
+			clan_id = 0
+			clan_tag = "<NO_CLAN>"
+		
 		# creating the tuple for the current user
 		# more can be added but please append to this list
 		# to maintain compatibility
-		tmp_data_extract = [curr_player_userid, i["username"], user_dev_id, i["country"],i["clanTag"],i["clanId"]]
+
+		tmp_data_extract = [user_game_id,
+							user_name,
+							user_dev_id,
+							user_country,
+							clan_tag,
+							clan_id,
+							user_trophy]
 
 		# adding the tuple to the main list
 		l_name_dev.append(tmp_data_extract)
