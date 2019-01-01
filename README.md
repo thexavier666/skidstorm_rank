@@ -13,7 +13,7 @@
 	./merge_all <number of pages>
 	```
 
-3. To move all data to a folder named data_<number>, run the following command
+3. To move all data to a folder named `data_<number>`, run the following command
 
 	```
 	./move_all <number>
