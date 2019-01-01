@@ -17,7 +17,7 @@ def const_CSV_FILE_NAME(rank_range):
 	return "user_id_%s.csv" % (rank_range)
 
 def const_SS_IP():
-	return "150.109.0.114"
+	return "api.skidstorm.cmcm.com"
 
 #####################################
 
@@ -58,7 +58,9 @@ def get_userid(device_id):
 def get_rank_range_integer(rank_range):
 	return map(int,rank_range.split("-"))
 
-# calculates rank range from rank page number
+# calculates rank range from rank page numberi
+# if input is 1, output="1-100"
+# if input is 2, output="101-200" and so on
 def get_rank_range_from_rank_choice(rank_choice):
 	
 	# calculating rank limits
@@ -118,6 +120,7 @@ def main():
 	# input = 2 means rank 101-200 and so on
 	rank_choice = int(sys.argv[1])
 
+	# getting rank range based on input from user
 	rank_range = get_rank_range_from_rank_choice(rank_choice)
 
 	# fetches complete rank data
