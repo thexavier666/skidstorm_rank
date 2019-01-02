@@ -34,4 +34,4 @@ In the `master_db.csv` file, each line contains the details of one user. For eac
 ### Bugs
 
 * Some issue showing while running the `merge_all`, but not hampering final results
-* Sometimes, a connection might timeout. I have not handled it explicityly. Kindly redownload them by seeing which `json` file is missing and then run the `merge_all` script
+* Sometimes, a connection might timeout. I have not handled it explicitly. Kindly redownload them by seeing which `json` file is missing and then run the `merge_all` script
