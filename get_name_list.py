@@ -56,6 +56,15 @@ def get_userid(device_id):
 
 	return user_id
 
+def get_legendary_trophy(device_id):
+	json_user_file_name = const_USER_JSON(device_id)
+
+	json_dic = json.load(open(json_user_file_name, 'r'))
+
+	user_leg_trophy = json_dic["profile"]["legendaryTrophies"]
+
+	return user_leg_trophy
+
 # returns integer version of the string ranks
 def get_rank_range_integer(rank_range):
 	return map(int,rank_range.split("-"))
@@ -72,8 +81,45 @@ def get_rank_range_from_rank_choice(rank_choice):
 	rank_range = "%d-%d" % (lower_lim,upper_lim)
 
 	return rank_range
-	
 
+def get_user_all_data(i):
+
+	# getting device id of the current user
+	user_dev_id = i["device"]
+
+	# fetching the complete data of the current user
+	fetch_data_userid(user_dev_id)
+
+	# from the complete data of the user, getting the user ID and legendary trophy
+	user_game_id 	= get_userid(user_dev_id)
+	user_leg_trophy = get_legendary_trophy(user_dev_id)
+
+	user_name 		= i["username"]
+	clan_id 		= i["clanId"]
+	clan_tag 		= i["clanTag"]
+	user_country 	= i["country"]
+	user_trophy		= i["rank"]
+
+	# checking if the user belongs to a clan
+	if clan_id == None:
+		clan_id = 0
+		clan_tag = "<NO_CLAN>"
+
+	# creating the tuple for the current user
+	# more can be added but please append to this list
+	# to maintain compatibility
+
+	tmp_data_extract = [user_game_id,
+						user_name,
+						user_dev_id,
+						user_country,
+						clan_tag,
+						clan_id,
+						user_trophy,
+						user_leg_trophy]
+
+	return tmp_data_extract
+	
 # gets all ranks with userID and device ID
 def get_ranks(rank_range):
 	json_file_name = const_RANK_JSON(rank_range)
@@ -87,37 +133,9 @@ def get_ranks(rank_range):
 	lim_cnt = get_rank_range_integer(rank_range)[0]
 
 	for i in json_dic["ranks"]:
-		# getting device id of the current user
-		user_dev_id = i["device"]
 
-		# fetching the complete data of the current user
-		fetch_data_userid(user_dev_id)
-
-		# from the complete data of the user, getting only the user ID
-		user_game_id = get_userid(user_dev_id)
-
-		user_name 		= i["username"]
-		clan_id 		= i["clanId"]
-		clan_tag 		= i["clanTag"]
-		user_country 	= i["country"]
-		user_trophy		= i["rank"]
-
-		# checking if the user belongs to a clan
-		if clan_id == None:
-			clan_id = 0
-			clan_tag = "<NO_CLAN>"
-		
-		# creating the tuple for the current user
-		# more can be added but please append to this list
-		# to maintain compatibility
-
-		tmp_data_extract = [user_game_id,
-							user_name,
-							user_dev_id,
-							user_country,
-							clan_tag,
-							clan_id,
-							user_trophy]
+		# gathering a tuple of data for user 'i'
+		tmp_data_extract = get_user_all_data(i)
 
 		# adding the tuple to the main list
 		l_name_dev.append(tmp_data_extract)
