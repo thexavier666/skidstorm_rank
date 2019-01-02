@@ -109,14 +109,7 @@ def get_user_all_data(i):
 	# more can be added but please append to this list
 	# to maintain compatibility
 
-	tmp_data_extract = [user_game_id,
-						user_name,
-						user_dev_id,
-						user_country,
-						clan_tag,
-						clan_id,
-						user_trophy,
-						user_leg_trophy]
+	tmp_data_extract = [user_game_id,user_name,user_dev_id,user_country,clan_tag,clan_id,user_trophy,user_leg_trophy]
 
 	return tmp_data_extract
 	
