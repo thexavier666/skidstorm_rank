@@ -1,7 +1,7 @@
 import json
 import urllib
 import sys
-import os					# for deleting user json files
+import os			# for deleting user json files
 import unicodecsv as csv	# for writing spl. characters into file in UNICODE
 
 ########## SOME CONSTANTS ###########
@@ -30,11 +30,16 @@ def fetch_data_all(rank_range):
 
 	full_url = ss_url % (ss_ip, rank_range)
 
-	urllib.urlretrieve(full_url, const_RANK_JSON(rank_range))
+	while True:
+
+		urllib.urlretrieve(full_url, const_RANK_JSON(rank_range))
+
+		if os.path.isfile(const_RANK_JSON(rank_range)) == True:
+			break
 
 	# file has been fetched
 
-# fetches data for a particular player
+# fetches data for a particular player from the Skidstorm server
 # from the complete data, returns only the user ID
 def fetch_data_userid(device_id):
 	ss_ip = const_SS_IP()
@@ -42,7 +47,12 @@ def fetch_data_userid(device_id):
 
 	full_user_url = ss_user_url % (ss_ip, device_id)
 
-	urllib.urlretrieve(full_user_url, const_USER_JSON(device_id))
+	while True:
+
+		urllib.urlretrieve(full_user_url, const_USER_JSON(device_id))
+
+		if os.path.isfile(const_USER_JSON(device_id)) == True:
+			break
 
 	# file has been fetched
 
@@ -94,16 +104,16 @@ def get_user_all_data(i):
 	user_game_id 	= get_userid(user_dev_id)
 	user_leg_trophy = get_legendary_trophy(user_dev_id)
 
-	user_name 		= i["username"]
-	clan_id 		= i["clanId"]
-	clan_tag 		= i["clanTag"]
+	user_name 	= i["username"]
+	clan_id 	= i["clanId"]
+	clan_tag 	= i["clanTag"]
 	user_country 	= i["country"]
-	user_trophy		= i["rank"]
+	user_trophy	= i["rank"]
 
 	# checking if the user belongs to a clan
 	if clan_id == None:
 		clan_id = 0
-		clan_tag = "<NO_CLAN>"
+		clan_tag= "<NO_CLAN>"
 
 	# creating the tuple for the current user
 	# more can be added but please append to this list
@@ -125,10 +135,10 @@ def get_ranks(rank_range):
 	# getting lower limit of the rank range in integer
 	lim_cnt = get_rank_range_integer(rank_range)[0]
 
-	for i in json_dic["ranks"]:
+	for each_player in json_dic["ranks"]:
 
 		# gathering a tuple of data for user 'i'
-		tmp_data_extract = get_user_all_data(i)
+		tmp_data_extract = get_user_all_data(each_player)
 
 		# adding the tuple to the main list
 		l_name_dev.append(tmp_data_extract)
@@ -154,8 +164,7 @@ def main():
 	# getting rank range based on input from user
 	rank_range = get_rank_range_from_rank_choice(rank_choice)
 
-	# fetches complete rank data
-	# disable this line if you have already fetched the complete rank data once
+	# fetches complete rank data from Skidstorm Servers
 	fetch_data_all(rank_range)
 
 	# extracting data from json
