@@ -53,7 +53,7 @@ def fetch_data_userid(device_id):
 
 		if os.path.isfile(const_USER_JSON(device_id)) == True:
 			break
-
+	
 	# file has been fetched
 
 # gets the user ID for the current user from the json file
@@ -144,7 +144,7 @@ def get_ranks(rank_range):
 		l_name_dev.append(tmp_data_extract)
 
 		# deleting the user data json file once the work is done
-		os.remove(const_USER_JSON(i["device"]))
+		os.remove(const_USER_JSON(each_player["device"]))
 
 		print "Rank %s %s" % (str(lim_cnt), tmp_data_extract)
 
