@@ -1,8 +1,9 @@
 import json
-import urllib
+import requests
 import sys
 import os			# for deleting user json files
 import unicodecsv as csv	# for writing spl. characters into file in UNICODE
+import time
 
 ########## SOME CONSTANTS ###########
 
@@ -21,7 +22,18 @@ def const_CSV_FILE_NAME(rank_range):
 def const_SS_IP():
 	return "api.skidstorm.cmcm.com"
 
+def const_URL_ERROR_SLEEP_TIME():
+	return 3
+
 #####################################
+
+def check_response_validity(urllib_obj):
+	response_content_length = int(urllib_obj[1]["Content-Length"])
+
+	if response_content_length > 1000:
+		return True
+
+	return False
 
 # fetches all data from main rank
 def fetch_data_all(rank_range):
@@ -30,12 +42,27 @@ def fetch_data_all(rank_range):
 
 	full_url = ss_url % (ss_ip, rank_range)
 
-	while True:
+	break_fl = 0
 
-		urllib.urlretrieve(full_url, const_RANK_JSON(rank_range))
+	while break_fl == 0:
 
-		if os.path.isfile(const_RANK_JSON(rank_range)) == True:
-			break
+		'''
+		response_obj = urllib.urlretrieve(full_url, const_RANK_JSON(rank_range))
+		
+		if check_response_validity(response_obj) == False:
+			print "Rank %s missing. Downloading again" % (rank_range)
+			time.sleep(const_URL_ERROR_SLEEP_TIME)
+
+		else:
+		'''
+
+		response_obj = requests.get(full_url)
+
+		if response_obj.status_code == 200:
+			json.dump(response_obj.json(),open(const_RANK_JSON(rank_range),"w"))
+			return
+		else:
+			print "OOPS SORRY %s" % (rank_range)
 
 	# file has been fetched
 
@@ -47,13 +74,28 @@ def fetch_data_userid(device_id):
 
 	full_user_url = ss_user_url % (ss_ip, device_id)
 
-	while True:
+	break_fl = 0
 
-		urllib.urlretrieve(full_user_url, const_USER_JSON(device_id))
+	while break_fl == 0:
 
-		if os.path.isfile(const_USER_JSON(device_id)) == True:
-			break
-	
+		'''
+		response_obj = urllib.urlretrieve(full_user_url, const_USER_JSON(device_id))
+
+		if check_response_validity(response_obj) == False:
+			print "User %s missing. Downloading again after sleep" % (device_id)
+			time.sleep(const_URL_ERROR_SLEEP_TIME)
+
+		else:
+		'''
+
+		response_obj = requests.get(full_user_url)
+
+		if response_obj.status_code == 200:
+			json.dump(response_obj.json(),open(const_USER_JSON(device_id),"w"))
+			return
+		else:
+			print "OOPS SORRY %s" % (device_id)
+
 	# file has been fetched
 
 # gets the user ID for the current user from the json file
@@ -146,7 +188,8 @@ def get_ranks(rank_range):
 		# deleting the user data json file once the work is done
 		os.remove(const_USER_JSON(each_player["device"]))
 
-		print "Rank %s %s" % (str(lim_cnt), tmp_data_extract)
+		#print "Rank %s %s" % (str(lim_cnt), tmp_data_extract)
+		print "Rank %s" % (str(lim_cnt))
 
 		lim_cnt += 1
 
