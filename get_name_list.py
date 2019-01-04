@@ -3,21 +3,23 @@ import requests
 import sys
 import os			# for deleting user json files
 import unicodecsv as csv	# for writing spl. characters into file in UNICODE
-import time
 
 ########## SOME CONSTANTS ###########
 
+def const_DATA_DIR(num = sys.argv[2]):
+	return "data_%s/" % (num)
+
 # returns file name of a certain rank range
 def const_RANK_JSON(rank_range):
-	return "all_rank_%s.json" % (rank_range)
+	return "%sall_rank_%s.json" % (const_DATA_DIR(), rank_range)
 
 # returns file name of a user based on device ID
 def const_USER_JSON(device_id):
-	return "user_%s.json" % (device_id)
+	return "%suser_%s.json" % (const_DATA_DIR(), device_id)
 
 # returns file name of user details of a certain rank range
 def const_CSV_FILE_NAME(rank_range):
-	return "user_id_%s.csv" % (rank_range)
+	return "%suser_id_%s.csv" % (const_DATA_DIR(), rank_range)
 
 def const_SS_IP():
 	return "api.skidstorm.cmcm.com"
@@ -67,29 +69,18 @@ def fetch_data_userid(device_id):
 			return
 		else:
 			print "OOPS SORRY %s" % (device_id)
-			import subprocess as sp
-			sp.call("touch missing_file_%s" % (device_id),shell=True)
 
 	# file has been fetched
 
-# gets the user ID for the current user from the json file
-def get_userid(device_id):
+def get_user_profile_details(device_id):
 	json_user_file_name = const_USER_JSON(device_id)
 
 	json_dic = json.load(open(json_user_file_name, 'r'))
 
-	user_id = json_dic["profile"]["id"]
-
-	return user_id
-
-def get_legendary_trophy(device_id):
-	json_user_file_name = const_USER_JSON(device_id)
-
-	json_dic = json.load(open(json_user_file_name, 'r'))
-
+	user_id 	= json_dic["profile"]["id"]
 	user_leg_trophy = json_dic["profile"]["legendaryTrophies"]
 
-	return user_leg_trophy
+	return [user_id,user_leg_trophy]
 
 # returns integer version of the string ranks
 def get_rank_range_integer(rank_range):
@@ -117,8 +108,10 @@ def get_user_all_data(i):
 	fetch_data_userid(user_dev_id)
 
 	# from the complete data of the user, getting the user ID and legendary trophy
-	user_game_id 	= get_userid(user_dev_id)
-	user_leg_trophy = get_legendary_trophy(user_dev_id)
+	#user_game_id 	= get_userid(user_dev_id)
+	#user_leg_trophy = get_legendary_trophy(user_dev_id)
+
+	user_game_id, user_leg_trophy = get_user_profile_details(user_dev_id)
 
 	user_name 	= i["username"]
 	clan_id 	= i["clanId"]
@@ -131,7 +124,7 @@ def get_user_all_data(i):
 		clan_id = 0
 		clan_tag= "<NO_CLAN>"
 
-	# creating the tuple for the current user
+	# creating a list for the current user
 	# more can be added but please append to this list
 	# to maintain compatibility
 
@@ -162,7 +155,6 @@ def get_ranks(rank_range):
 		# deleting the user data json file once the work is done
 		os.remove(const_USER_JSON(each_player["device"]))
 
-		#print "Rank %s %s" % (str(lim_cnt), tmp_data_extract)
 		print "Rank %s" % (str(lim_cnt))
 
 		lim_cnt += 1
@@ -172,11 +164,15 @@ def get_ranks(rank_range):
 	wr = csv.writer(fp)
 	wr.writerows(l_name_dev)
 
-def main():	
+def main():
 
 	# input = 1 means rank 1-100
 	# input = 2 means rank 101-200 and so on
 	rank_choice = int(sys.argv[1])
+
+	# checking if the data destination directory already exists or not
+	if os.path.exists(const_DATA_DIR()) == False:
+		os.mkdir(const_DATA_DIR())
 
 	# getting rank range based on input from user
 	rank_range = get_rank_range_from_rank_choice(rank_choice)
@@ -186,6 +182,9 @@ def main():
 
 	# extracting data from json
 	get_ranks(rank_range)
+
+	# removing the json file containing all the details (Information already extracted)
+	os.remove(const_RANK_JSON(rank_range))
 
 if __name__ == "__main__":
 	main()
