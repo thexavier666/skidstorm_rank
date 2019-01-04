@@ -27,14 +27,6 @@ def const_URL_ERROR_SLEEP_TIME():
 
 #####################################
 
-def check_response_validity(urllib_obj):
-	response_content_length = int(urllib_obj[1]["Content-Length"])
-
-	if response_content_length > 1000:
-		return True
-
-	return False
-
 # fetches all data from main rank
 def fetch_data_all(rank_range):
 	ss_ip = const_SS_IP()
@@ -45,16 +37,6 @@ def fetch_data_all(rank_range):
 	break_fl = 0
 
 	while break_fl == 0:
-
-		'''
-		response_obj = urllib.urlretrieve(full_url, const_RANK_JSON(rank_range))
-		
-		if check_response_validity(response_obj) == False:
-			print "Rank %s missing. Downloading again" % (rank_range)
-			time.sleep(const_URL_ERROR_SLEEP_TIME)
-
-		else:
-		'''
 
 		response_obj = requests.get(full_url)
 
@@ -78,16 +60,6 @@ def fetch_data_userid(device_id):
 
 	while break_fl == 0:
 
-		'''
-		response_obj = urllib.urlretrieve(full_user_url, const_USER_JSON(device_id))
-
-		if check_response_validity(response_obj) == False:
-			print "User %s missing. Downloading again after sleep" % (device_id)
-			time.sleep(const_URL_ERROR_SLEEP_TIME)
-
-		else:
-		'''
-
 		response_obj = requests.get(full_user_url)
 
 		if response_obj.status_code == 200:
@@ -95,6 +67,8 @@ def fetch_data_userid(device_id):
 			return
 		else:
 			print "OOPS SORRY %s" % (device_id)
+			import subprocess as sp
+			sp.call("touch missing_file_%s" % (device_id),shell=True)
 
 	# file has been fetched
 

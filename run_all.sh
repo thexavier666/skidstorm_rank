@@ -5,4 +5,4 @@ do
 	python get_name_list.py $i &
 done
 
-echo "ALL DATA FETCHED!"
+echo "ALL FETCH STARTED!"
