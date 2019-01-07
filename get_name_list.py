@@ -83,7 +83,7 @@ def get_user_profile_details(device_id):
 def get_rank_range_integer(rank_range):
 	return map(int,rank_range.split("-"))
 
-# calculates rank range from rank page numberi
+# calculates rank range from rank page numbers
 # if input is 1, output="1-100"
 # if input is 2, output="101-200" and so on
 def get_rank_range_from_rank_choice(rank_choice):
