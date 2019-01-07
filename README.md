@@ -7,7 +7,7 @@
 
 ### How to run
 
-1. To fetch the complete data, run the following command. The argument `number of pages` must be an integer. If you enter 10, it means 10 pages of data will be fetched where each page contains 100 players, thus the data of 1000 players will be fetched. The argument <number> indicates where the file will be saved. If <number> is 10, then the file will be saved in `./data_10`
+1. To fetch the complete data, run the following command. The argument `<number of pages>` must be an integer. If you enter 10, it means 10 pages of data will be fetched where each page contains 100 players, thus the data of 1000 players will be fetched. The argument `<number>` indicates where the file will be saved. If the argument `<number>` is 10, then the file will be saved in `./data_10`
 
 	```
 	./run_all <number of pages> <number>
