@@ -24,9 +24,6 @@ def const_CSV_FILE_NAME(rank_range):
 def const_SS_IP():
 	return "api.skidstorm.cmcm.com"
 
-def const_URL_ERROR_SLEEP_TIME():
-	return 3
-
 #####################################
 
 # fetches all data from main rank
@@ -108,11 +105,9 @@ def get_user_all_data(i):
 	fetch_data_userid(user_dev_id)
 
 	# from the complete data of the user, getting the user ID and legendary trophy
-	#user_game_id 	= get_userid(user_dev_id)
-	#user_leg_trophy = get_legendary_trophy(user_dev_id)
-
 	user_game_id, user_leg_trophy = get_user_profile_details(user_dev_id)
 
+	# from the main rank list, fetching the following details
 	user_name 	= i["username"]
 	clan_id 	= i["clanId"]
 	clan_tag 	= i["clanTag"]
@@ -125,9 +120,6 @@ def get_user_all_data(i):
 		clan_tag= "<NO_CLAN>"
 
 	# creating a list for the current user
-	# more can be added but please append to this list
-	# to maintain compatibility
-
 	tmp_data_extract = [user_game_id,user_name,user_dev_id,user_country,clan_tag,clan_id,user_trophy,user_leg_trophy]
 
 	return tmp_data_extract
@@ -155,14 +147,14 @@ def get_ranks(rank_range):
 		# deleting the user data json file once the work is done
 		os.remove(const_USER_JSON(each_player["device"]))
 
-		print "Rank %s" % (str(lim_cnt))
-
 		lim_cnt += 1
 
 	# writing the list in a csv file
 	fp = open(const_CSV_FILE_NAME(rank_range), 'wb')
 	wr = csv.writer(fp)
 	wr.writerows(l_name_dev)
+
+	print "Details for players of rank range %s written in CSV" % (rank_range)
 
 def main():
 
@@ -179,6 +171,8 @@ def main():
 
 	# fetches complete rank data from Skidstorm Servers
 	fetch_data_all(rank_range)
+
+	print "Fetch for rank range %s finished" % (rank_range)
 
 	# extracting data from json
 	get_ranks(rank_range)
