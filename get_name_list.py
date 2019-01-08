@@ -33,17 +33,16 @@ def fetch_data_all(rank_range):
 
 	full_url = ss_url % (ss_ip, rank_range)
 
-	break_fl = 0
-
-	while break_fl == 0:
+	while True:
 
 		response_obj = requests.get(full_url)
 
 		if response_obj.status_code == 200:
 			json.dump(response_obj.json(),open(const_RANK_JSON(rank_range),"w"))
+			print "Fetch for rank range %s finished" % (rank_range)
 			return
 		else:
-			print "OOPS SORRY %s" % (rank_range)
+			print "D/L FAILED FOR %s. TRYING AGAIN!" % (rank_range)
 
 	# file has been fetched
 
@@ -55,9 +54,7 @@ def fetch_data_userid(device_id):
 
 	full_user_url = ss_user_url % (ss_ip, device_id)
 
-	break_fl = 0
-
-	while break_fl == 0:
+	while True:
 
 		response_obj = requests.get(full_user_url)
 
@@ -65,7 +62,7 @@ def fetch_data_userid(device_id):
 			json.dump(response_obj.json(),open(const_USER_JSON(device_id),"w"))
 			return
 		else:
-			print "OOPS SORRY %s" % (device_id)
+			print "D/L FAILED FOR %s. TRYING AGAIN!" % (device_id)
 
 	# file has been fetched
 
@@ -162,17 +159,11 @@ def main():
 	# input = 2 means rank 101-200 and so on
 	rank_choice = int(sys.argv[1])
 
-	# checking if the data destination directory already exists or not
-	if os.path.exists(const_DATA_DIR()) == False:
-		os.mkdir(const_DATA_DIR())
-
 	# getting rank range based on input from user
 	rank_range = get_rank_range_from_rank_choice(rank_choice)
 
 	# fetches complete rank data from Skidstorm Servers
 	fetch_data_all(rank_range)
-
-	print "Fetch for rank range %s finished" % (rank_range)
 
 	# extracting data from json
 	get_ranks(rank_range)
