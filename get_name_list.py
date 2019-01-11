@@ -42,7 +42,7 @@ def fetch_data_all(rank_range):
 			print "Fetch for rank range %s finished" % (rank_range)
 			return
 		else:
-			print "D/L FAILED FOR %s. TRYING AGAIN!" % (rank_range)
+			print "D/L FAILED FOR RANK %s. TRYING AGAIN!" % (rank_range)
 
 	# file has been fetched
 
@@ -62,7 +62,7 @@ def fetch_data_userid(device_id):
 			json.dump(response_obj.json(),open(const_USER_JSON(device_id),"w"))
 			return
 		else:
-			print "D/L FAILED FOR %s. TRYING AGAIN!" % (device_id)
+			print "D/L FAILED FOR USER %s. TRYING AGAIN!" % (device_id)
 
 	# file has been fetched
 
