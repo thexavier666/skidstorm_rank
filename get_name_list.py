@@ -24,12 +24,16 @@ def const_CSV_FILE_NAME(rank_range):
 def const_SS_IP():
 	return "api.skidstorm.cmcm.com"
 
+def const_SS_URL_FORMAT():
+	return "http://%s/v2/rank/list/%s/ALL"
+
+
 #####################################
 
 # fetches all data from main rank
 def fetch_data_all(rank_range):
 	ss_ip = const_SS_IP()
-	ss_url = "http://%s/v/rank/list/%s/ALL"
+	ss_url = const_SS_URL_FORMAT()
 
 	full_url = ss_url % (ss_ip, rank_range)
 

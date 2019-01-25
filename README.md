@@ -4,6 +4,7 @@
 
 * Python 2.7
 * Python library `unicodecsv`
+* Make sure all the scripts are executable
 
 ### How to run
 
@@ -17,6 +18,12 @@
 
 	```
 	./merge_all <number of pages> <number>
+	```
+
+3. **OPTIONAL** : If you want to see all the name changes of a particular player, then get the player's game ID, say `<ID>`. Then run this command
+
+	```
+	./change_all <ID>
 	```
 
 ### Data collected
