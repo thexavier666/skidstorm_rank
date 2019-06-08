@@ -4,7 +4,7 @@ import sys
 import os			# for deleting user json files
 import unicodecsv as csv	# for writing spl. characters into file in UNICODE
 
-########## SOME CONSTANTS ###########
+########## CONSTANTS ###########
 
 def const_DATA_DIR(num = sys.argv[2]):
 	return "data_%s/" % (num)
@@ -27,6 +27,8 @@ def const_SS_IP():
 def const_SS_URL_FORMAT():
 	return "http://%s/v2/rank/list/%s/ALL"
 
+def const_SS_USER_URL_FORMAT():
+        return "http://%s/v2/profile/%s"
 
 #####################################
 
@@ -46,7 +48,7 @@ def fetch_data_all(rank_range):
 			print "Fetch for rank range %s finished" % (rank_range)
 			return
 		else:
-			print "D/L FAILED FOR RANK %s. TRYING AGAIN!" % (rank_range)
+			print "[RANK ERROR] D/L FAILED FOR %s. TRYING AGAIN!" % (rank_range)
 
 	# file has been fetched
 
@@ -54,7 +56,7 @@ def fetch_data_all(rank_range):
 # from the complete data, returns only the user ID
 def fetch_data_userid(device_id):
 	ss_ip = const_SS_IP()
-	ss_user_url = "http://%s/v/profile/%s"
+	ss_user_url = const_SS_USER_URL_FORMAT() 
 
 	full_user_url = ss_user_url % (ss_ip, device_id)
 
@@ -66,7 +68,7 @@ def fetch_data_userid(device_id):
 			json.dump(response_obj.json(),open(const_USER_JSON(device_id),"w"))
 			return
 		else:
-			print "D/L FAILED FOR USER %s. TRYING AGAIN!" % (device_id)
+			print "[USER ERROR] D/L FAILED FOR %s. TRYING AGAIN!" % (device_id)
 
 	# file has been fetched
 
