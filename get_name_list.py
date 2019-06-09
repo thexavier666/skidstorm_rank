@@ -50,8 +50,6 @@ def fetch_data_all(rank_range):
 		else:
 			print "[RANK ERROR] D/L FAILED FOR %s. TRYING AGAIN!" % (rank_range)
 
-	# file has been fetched
-
 # fetches data for a particular player from the Skidstorm server
 # from the complete data, returns only the user ID
 def fetch_data_userid(device_id):
@@ -60,17 +58,21 @@ def fetch_data_userid(device_id):
 
 	full_user_url = ss_user_url % (ss_ip, device_id)
 
-	while True:
+        try:
+            while True:
 
-		response_obj = requests.get(full_user_url)
+                    response_obj = requests.get(full_user_url)
 
-		if response_obj.status_code == 200:
-			json.dump(response_obj.json(),open(const_USER_JSON(device_id),"w"))
-			return
-		else:
-			print "[USER ERROR] D/L FAILED FOR %s. TRYING AGAIN!" % (device_id)
+                    if response_obj.status_code == 200:
+                            json.dump(response_obj.json(),open(const_USER_JSON(device_id),"w"))
+                            return True
+                    else:
 
-	# file has been fetched
+                        print "[USER ERROR] D/L FAILED FOR %s. TRYING AGAIN!" % (device_id)
+
+        except:
+            print "[USER ERROR] GAVE UP D/L FOR %s" % (device_id)
+            return False
 
 def get_user_profile_details(device_id):
 	json_user_file_name = const_USER_JSON(device_id)
@@ -105,7 +107,10 @@ def get_user_all_data(i):
 	user_dev_id = i["device"]
 
 	# fetching the complete data of the current user
-	fetch_data_userid(user_dev_id)
+	return_val = fetch_data_userid(user_dev_id)
+
+        if return_val == False:
+            return False
 
 	# from the complete data of the user, getting the user ID and legendary trophy
 	user_game_id, user_leg_trophy = get_user_profile_details(user_dev_id)
@@ -143,6 +148,9 @@ def get_ranks(rank_range):
 
 		# gathering a tuple of data for user 'i'
 		tmp_data_extract = get_user_all_data(each_player)
+
+                if tmp_data_extract == False:
+                    continue
 
 		# adding the tuple to the main list
 		l_name_dev.append(tmp_data_extract)
