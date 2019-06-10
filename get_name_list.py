@@ -74,13 +74,17 @@ def fetch_data_userid(device_id):
             print "[USER ERROR] GAVE UP D/L FOR %s" % (device_id)
             return False
 
+# checks if a variable is a non empty dictionary
 def is_dictionary(some_dict):
+
     if type(some_dict) == type({}):
+
         if len(some_dict.keys()) != 0:
             return True
+
     return False
 
-def get_user_profile_details(device_id):
+def get_user_profile_details(device_id, clan_id):
 	json_user_file_name = const_USER_JSON(device_id)
 
 	json_dic = json.load(open(json_user_file_name, 'r'))
@@ -88,25 +92,21 @@ def get_user_profile_details(device_id):
 	user_id 	= json_dic["profile"]["id"]
 	user_leg_trophy = json_dic["profile"]["legendaryTrophies"]
 
-        user_profile    = json_dic["profile"]["profile"]
-
         user_clanScore  = "<NO_CLANSCORE>"
-        
-        if is_dictionary(user_profile) == True:
 
-            user_clan = user_profile["clan"]
-                #print user_profile
-                #print type(user_profile)
+        # checking if the user is a part of a clan
+        if clan_id != 0:
 
-            if is_dictionary(user_clan) == True:
-
-                user_clanScore  = user_clan["clanScore"]
+            user_profile    = json_dic["profile"]["profile"]
+            user_clan       = user_profile["clan"]
+            user_clanScore  = user_clan["clanScore"]
 
 	return [user_id,user_leg_trophy,user_clanScore]
 
 # returns integer version of the string ranks
 def get_rank_range_integer(rank_range):
-	return map(int,rank_range.split("-"))
+
+    return map(int,rank_range.split("-"))
 
 # calculates rank range from rank page numbers
 # if input is 1, output="1-100"
@@ -121,6 +121,7 @@ def get_rank_range_from_rank_choice(rank_choice):
 
 	return rank_range
 
+# gets all data for a given player 'i'
 def get_user_all_data(i):
 
 	# getting device id of the current user
@@ -129,11 +130,9 @@ def get_user_all_data(i):
 	# fetching the complete data of the current user
 	return_val = fetch_data_userid(user_dev_id)
 
+        # checking if fetching user detail was successful
         if return_val == False:
             return False
-
-	# from the complete data of the user, getting the user ID and legendary trophy
-	user_game_id, user_leg_trophy, user_clanScore = get_user_profile_details(user_dev_id)
 
 	# from the main rank list, fetching the following details
 	user_name 	= i["username"]
@@ -146,6 +145,9 @@ def get_user_all_data(i):
 	if clan_id == None:
 		clan_id = 0
 		clan_tag= "<NO_CLAN>"
+	
+        # from the complete data of the user, getting the user ID and legendary trophy
+	user_game_id, user_leg_trophy, user_clanScore  = get_user_profile_details(user_dev_id, clan_id)
 
 	# creating a list for the current user
 	tmp_data_extract = [user_game_id,user_name,user_dev_id,user_country,clan_tag,clan_id,user_trophy,user_leg_trophy,user_clanScore]
