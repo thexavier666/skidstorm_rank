@@ -92,7 +92,7 @@ def get_user_profile_details(device_id, clan_id):
 	user_id 	= json_dic["profile"]["id"]
 	user_leg_trophy = json_dic["profile"]["legendaryTrophies"]
 
-        user_clanScore  = "<NO_CLANSCORE>"
+        user_clanScore  = "<NO_CLAN>"
 
         # checking if the user is a part of a clan
         if clan_id != 0:
