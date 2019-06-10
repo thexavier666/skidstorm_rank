@@ -148,7 +148,7 @@ def get_user_all_data(i):
 	if return_val == False:
 		return False
 
-			# from the complete data of the user, getting the user ID and legendary trophy
+	# from the complete data of the user, getting the user ID and legendary trophy
 	user_game_id, user_leg_trophy, user_clanScore  = get_user_profile_details(user_dev_id, clan_id)
 
 	# creating a list for the current user
@@ -167,13 +167,13 @@ def get_ranks(rank_range):
 
 	# getting lower limit of the rank range in integer
 	lim_cnt = list(get_rank_range_integer(rank_range))[0]
-	#lim_cnt = lim_cnt[0]
 
 	for each_player in json_dic["ranks"]:
 
 		# gathering a tuple of data for user 'i'
 		data_extract = get_user_all_data(each_player)
 
+		# if a players data could not be fetched, then it's skipped
 		if data_extract == False:
 			continue
 

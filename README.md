@@ -2,9 +2,9 @@
 
 ### Pre-requisites
 
-* Python 2.7
-* Python library `unicodecsv`
-* Make sure all the scripts are executable
+* Python 3.6
+* Python library `unicodecsv` `requests`
+* Make sure all the shell-scripts are executable by using `chmod +x`
 
 ### How to run
 
@@ -20,17 +20,18 @@
 	./merge_all <number of pages> <number>
 	```
 
-3. **OPTIONAL** : If you want to see all the name changes of a particular player, then get the player's game ID, say `<ID>`. Then run this command
+3. **OPTIONAL** : If you want to see all the name changes of a particular player, then get the player's game ID, say `<ID>`. Then run this command (this is currently not working. I plan to correct it later)
 
 	```
 	./change_all <ID>
 	```
 
+
 ### Data collected
 
 In the `master_db.csv` file, each line contains the details of one user. For each user, the following details are collected.
 
-`user ID, username, device ID, country code, clan tag, clan ID, current number of trophies, number of legendary trophies`
+`user ID, username, device ID, country code, clan tag, clan ID, current number of trophies, number of legendary trophies, total clan trophies`
 
 ### Files created
 
