@@ -124,17 +124,8 @@ def get_rank_range_from_rank_choice(rank_choice):
 # gets all data for a given player 'i'
 def get_user_all_data(i):
 
-	# getting device id of the current user
-	user_dev_id = i["device"]
-
-	# fetching the complete data of the current user
-	return_val = fetch_data_userid(user_dev_id)
-
-        # checking if fetching user detail was successful
-        if return_val == False:
-            return False
-
 	# from the main rank list, fetching the following details
+	user_dev_id 	= i["device"]
 	user_name 	= i["username"]
 	clan_id 	= i["clanId"]
 	clan_tag 	= i["clanTag"]
@@ -145,14 +136,21 @@ def get_user_all_data(i):
 	if clan_id == None:
 		clan_id = 0
 		clan_tag= "<NO_CLAN>"
+
+	# fetching the complete data of the current user
+	return_val = fetch_data_userid(user_dev_id)
+
+        # checking if fetching user detail was successful
+        if return_val == False:
+            return False
 	
         # from the complete data of the user, getting the user ID and legendary trophy
 	user_game_id, user_leg_trophy, user_clanScore  = get_user_profile_details(user_dev_id, clan_id)
 
 	# creating a list for the current user
-	tmp_data_extract = [user_game_id,user_name,user_dev_id,user_country,clan_tag,clan_id,user_trophy,user_leg_trophy,user_clanScore]
+	data_extract = [user_game_id,user_name,user_dev_id,user_country,clan_tag,clan_id,user_trophy,user_leg_trophy,user_clanScore]
 
-	return tmp_data_extract
+	return data_extract
 	
 # gets all ranks with userID and device ID
 def get_ranks(rank_range):
@@ -169,13 +167,13 @@ def get_ranks(rank_range):
 	for each_player in json_dic["ranks"]:
 
 		# gathering a tuple of data for user 'i'
-		tmp_data_extract = get_user_all_data(each_player)
+		data_extract = get_user_all_data(each_player)
 
-                if tmp_data_extract == False:
+                if data_extract == False:
                     continue
 
 		# adding the tuple to the main list
-		l_name_dev.append(tmp_data_extract)
+		l_name_dev.append(data_extract)
 
 		# deleting the user data json file once the work is done
 		os.remove(const_USER_JSON(each_player["device"]))
