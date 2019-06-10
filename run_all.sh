@@ -11,7 +11,7 @@ mkdir "data_${data_num}"
 
 for (( i=1; i<=$num_pages; i++ ))
 do
-	python get_name_list.py $i $data_num &
+	python3 get_name_list.py $i $data_num &
 done
 
 echo "ALL FETCH STARTED!"

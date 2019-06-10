@@ -1,6 +1,7 @@
 *.json
 *.csv
 *.swp
+*.pyc
 tmp_code/*
 other_data/*
 data_*
