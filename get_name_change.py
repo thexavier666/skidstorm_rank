@@ -4,16 +4,19 @@ import subprocess as sp
 
 def main():
 
-	# directory where player data is stored
-	data_dir = "data_%d"
-
 	# name of master database
 	master_db_filename = "master_db.csv"
 
 	# getting player ID
 	player_id = sys.argv[1]
 
-	dir_list = os.listdir("./")
+	# getting season directory
+	season_dir = sys.argv[2]
+	
+	# directory where player data is stored
+	data_dir = season_dir + "data_%d"
+
+	dir_list = os.listdir(season_dir+"/")
 
 	# list to store current list of database directories
 	data_dir_list = []
@@ -25,11 +28,11 @@ def main():
 				data_dir_list.append(i.split('_')[1])
 
 	if len(data_dir_list) == 0:
-		print "No data directory present. Bye bye"
+		print("No data directory present. Bye bye")
 		return 0
 
 	# converting directory ID to integer
-	data_dir_list_to_int = map(int,data_dir_list)
+	data_dir_list_to_int = list(map(int,data_dir_list))
 
 	# sorting them so that output is by date
 	data_dir_list_to_int.sort()
