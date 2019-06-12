@@ -6,6 +6,12 @@ import sys
 import os			# for deleting user json files
 import unicodecsv as csv	# for writing spl. characters into file in UNICODE
 
+########## ARGUMENTS ###########
+
+# argument 1 = numeric | which rank page to fetch
+# argument 2 = numeric | in which folder to keep the collected data
+# argument 3 = binary  | 0 : default fetch, 1 : don't fetch user ID, fetches are much faster
+
 ########## CONSTANTS ###########
 
 def const_DATA_DIR(num = sys.argv[2]):
@@ -79,33 +85,19 @@ def fetch_data_userid(device_id):
 def is_dictionary(some_dict):
 
 	if type(some_dict) == type({}):
-
 		if len(some_dict.keys()) != 0:
-
 			return True
 
 	return False
 
-def get_user_profile_details(device_id, clan_id):
-	json_user_file_name = const_USER_JSON(device_id)
+def get_user_profile_details(device_id):
 
+	json_user_file_name = const_USER_JSON(device_id)
 	json_dic = json.load(open(json_user_file_name, 'r'))
 
 	user_id 	= json_dic["profile"]["id"]
-	user_leg_trophy = json_dic["profile"]["legendaryTrophies"]
 
-	user_clanScore  = "<NO_CLAN>"
-
-	# checking if the user is a part of a clan
-	if clan_id != 0:
-
-		user_profile	= json_dic["profile"]["profile"]
-		user_clan	= user_profile["clan"]
-
-		if is_dictionary(user_clan):
-			user_clanScore  = user_clan["clanScore"]
-
-	return [user_id,user_leg_trophy,user_clanScore]
+	return user_id
 
 # returns integer version of the string ranks
 def get_rank_range_integer(rank_range):
@@ -125,34 +117,40 @@ def get_rank_range_from_rank_choice(rank_choice):
 
 	return rank_range
 
-# gets all data for a given player 'i'
-def get_user_all_data(i):
+# gets all data for a given player
+def get_user_all_data(each_player):
 
 	# from the main rank list, fetching the following details
-	user_dev_id 	= i["device"]
-	user_name 	= i["username"]
-	clan_id 	= i["clanId"]
-	clan_tag 	= i["clanTag"]
-	user_country 	= i["country"]
-	user_trophy	= i["rank"]
+	user_game_id	= "0"
+	user_dev_id	= each_player["device"]
+	user_name	= each_player["username"]
+	user_country	= each_player["country"]
+	user_trophy	= each_player["rank"]
+	user_leg_trophy	= each_player["legendaryTrophies"]
+	clan_id		= each_player["clanId"]
+	clan_tag	= each_player["clanTag"]
+	clan_score	= "<NO_CLAN>"
 
 	# checking if the user belongs to a clan
-	if clan_id == None:
-		clan_id = 0
-		clan_tag= "<NO_CLAN>"
+	if clan_id != None:
+		user_profile	= each_player["profile"]
+		user_clan	= user_profile["clan"]
+		clan_score	= user_clan["clanScore"]
 
-	# fetching the complete data of the current user
-	return_val = fetch_data_userid(user_dev_id)
+	if sys.argv[3] == "0":
+		# fetching the complete data of the current user from his profile
+		# this causes another GET request
+		return_val = fetch_data_userid(user_dev_id)
 
-	# checking if fetching user detail was successful
-	if return_val == False:
-		return False
+		# checking if fetching user detail was successful
+		if return_val == False:
+			return False
 
-	# from the complete data of the user, getting the user ID and legendary trophy
-	user_game_id, user_leg_trophy, user_clanScore  = get_user_profile_details(user_dev_id, clan_id)
+		# from the complete data of the user, getting the user ID, legendary trophy and clan score
+		user_game_id = get_user_profile_details(user_dev_id)
 
 	# creating a list for the current user
-	data_extract = [user_game_id,user_name,user_dev_id,user_country,clan_tag,clan_id,user_trophy,user_leg_trophy,user_clanScore]
+	data_extract = [user_game_id,user_name,user_dev_id,user_country,clan_tag,clan_id,user_trophy,user_leg_trophy,clan_score]
 
 	return data_extract
 
@@ -181,7 +179,8 @@ def get_ranks(rank_range):
 		l_name_dev.append(data_extract)
 
 		# deleting the user data json file once the work is done
-		os.remove(const_USER_JSON(each_player["device"]))
+		if sys.argv[3] == "0":
+			os.remove(const_USER_JSON(each_player["device"]))
 
 		lim_cnt += 1
 
