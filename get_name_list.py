@@ -14,6 +14,9 @@ import unicodecsv as csv	# for writing spl. characters into file in UNICODE
 
 ########## CONSTANTS ###########
 
+def const_NUM_DATA_POINT():
+	return 5000
+
 def const_DATA_DIR(num = sys.argv[2]):
 	return "data_%s/" % (num)
 
@@ -38,6 +41,9 @@ def const_SS_URL_FORMAT():
 def const_SS_USER_URL_FORMAT():
 	return "http://%s/v2/profile/%s"
 
+def const_ERROR_FILE():
+	return "error_file_%s" % (sys.argv[2])
+
 #####################################
 
 # fetches all data from main rank
@@ -48,12 +54,12 @@ def fetch_data_all(rank_range):
 	full_url = ss_url % (ss_ip, rank_range)
 
 	while True:
-
 		response_obj = requests.get(full_url)
 
 		if response_obj.status_code == 200:
 			json.dump(response_obj.json(),open(const_RANK_JSON(rank_range),"w"))
-			print("[SUCCESS] Fetch for rank range %s finished" % (rank_range))
+			print("[RANK SUCCESS] Fetch for range %s finished" % (rank_range))
+
 			return
 		else:
 			print("[RANK ERROR] D/L FAILED FOR %s. TRYING AGAIN!" % (rank_range))
@@ -93,11 +99,24 @@ def is_dictionary(some_dict):
 def get_user_profile_details(device_id):
 
 	json_user_file_name = const_USER_JSON(device_id)
-	json_dic = json.load(open(json_user_file_name, 'r'))
 
-	user_id 	= json_dic["profile"]["id"]
+	user_id 	= 0
+	user_last_login = 0
 
-	return user_id
+	try:
+		json_dic = json.load(open(json_user_file_name, 'r'))
+
+		user_id 	= json_dic["profile"]["id"]
+		user_last_login = json_dic["profile"]["last_login"]
+	except:
+		# keeping a track of files which apparently have been downloaded
+		# but don't have any data inside it OR are incorrect JSON files
+		with open(const_ERROR_FILE(),'a') as fp_ef:
+			fp_ef.write("file_miss|"+device_id+"\n")
+
+		return "<ERROR>","<ERROR>" 
+
+	return user_id,user_last_login
 
 # returns integer version of the string ranks
 def get_rank_range_integer(rank_range):
@@ -109,9 +128,11 @@ def get_rank_range_integer(rank_range):
 # if input is 2, output="101-200" and so on
 def get_rank_range_from_rank_choice(rank_choice):
 
+	num_data_points = const_NUM_DATA_POINT()
+
 	# calculating rank limits
-	upper_lim = rank_choice * 100
-	lower_lim = upper_lim - 99
+	upper_lim = rank_choice * num_data_points
+	lower_lim = upper_lim - (num_data_points - 1)
 
 	rank_range = "%d-%d" % (lower_lim,upper_lim)
 
@@ -122,20 +143,28 @@ def get_user_all_data(each_player):
 
 	# from the main rank list, fetching the following details
 	user_game_id	= "0"
+	user_last_login = "0"
 	user_dev_id	= each_player["device"]
 	user_name	= each_player["username"]
 	user_country	= each_player["country"]
 	user_trophy	= each_player["rank"]
 	user_leg_trophy	= each_player["legendaryTrophies"]
-	clan_id		= each_player["clanId"]
-	clan_tag	= each_player["clanTag"]
 	clan_score	= "<NO_CLAN>"
+	clan_id		= "<NO_CLAN>"
+	clan_tag	= "<NO_CLAN>"
+	
 
 	# checking if the user belongs to a clan
 	if clan_id != None:
 		user_profile	= each_player["profile"]
 		user_clan	= user_profile["clan"]
-		clan_score	= user_clan["clanScore"]
+
+		try:
+			clan_score	= user_clan["clanScore"]
+			clan_id         = user_clan["id"]
+			clan_tag        = user_clan["tag"]
+		except:
+			pass
 
 	if sys.argv[3] == "0":
 		# fetching the complete data of the current user from his profile
@@ -145,12 +174,12 @@ def get_user_all_data(each_player):
 		# checking if fetching user detail was successful
 		if return_val == False:
 			return False
-
-		# from the complete data of the user, getting the user ID, legendary trophy and clan score
-		user_game_id = get_user_profile_details(user_dev_id)
+		else:
+			# from the complete data of the user, getting the user ID, legendary trophy and clan score
+			user_game_id, user_last_login  = get_user_profile_details(user_dev_id)
 
 	# creating a list for the current user
-	data_extract = [user_game_id,user_name,user_dev_id,user_country,clan_tag,clan_id,user_trophy,user_leg_trophy,clan_score]
+	data_extract = [user_game_id,user_name,user_dev_id,user_country,clan_tag,clan_id,user_trophy,user_leg_trophy,clan_score,user_last_login]
 
 	return data_extract
 
@@ -168,28 +197,43 @@ def get_ranks(rank_range):
 
 	for each_player in json_dic["ranks"]:
 
+		fl_file_skip = 0
+
 		# gathering a tuple of data for user 'i'
 		data_extract = get_user_all_data(each_player)
 
 		# if a players data could not be fetched, then it's skipped
 		if data_extract == False:
+			fl_file_skip = 1
 			continue
+
+		# adding the player rank in the list
+		data_extract.insert(0,lim_cnt)
 
 		# adding the tuple to the main list
 		l_name_dev.append(data_extract)
 
 		# deleting the user data json file once the work is done
 		if sys.argv[3] == "0":
-			os.remove(const_USER_JSON(each_player["device"]))
+
+			#if os.path.exists(const_USER_JSON(each_player["device"])):
+			#	os.remove(const_USER_JSON(each_player["device"]))
+
+			if fl_file_skip == 1:
+				try:
+					os.remove(const_USER_JSON(each_player["device"]))
+				except:
+					with open(const_ERROR_FILE(),'a') as fp_ef:
+						fp_ef.write("delete_miss|" + each_player["device"] + "\n")
 
 		lim_cnt += 1
 
 	# writing the list in a csv file
 	fp = open(const_CSV_FILE_NAME(rank_range), 'wb')
-	wr = csv.writer(fp)
+	wr = csv.writer(fp, delimiter='|')
 	wr.writerows(l_name_dev)
 
-	print("[SUCCESS] Players details of rank %s written to file" % (rank_range))
+	print("[RANK SUCCESS] Players details of %s written to file" % (rank_range))
 
 def main():
 
