@@ -15,7 +15,7 @@ mkdir "data_${data_num}"
 for (( i=1; i<=$num_pages; i++ ))
 do
 	python3 get_name_list.py $i $data_num $fetch_flag &
-	sleep 2
+	sleep 5
 done
 
 echo "ALL FETCH STARTED!"

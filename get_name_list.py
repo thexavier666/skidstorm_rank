@@ -15,7 +15,7 @@ import unicodecsv as csv	# for writing spl. characters into file in UNICODE
 ########## CONSTANTS ###########
 
 def const_NUM_DATA_POINT():
-	return 5000
+	return 200
 
 def const_DATA_DIR(num = sys.argv[2]):
 	return "data_%s/" % (num)
@@ -112,7 +112,8 @@ def get_user_profile_details(device_id):
 		# keeping a track of files which apparently have been downloaded
 		# but don't have any data inside it OR are incorrect JSON files
 		with open(const_ERROR_FILE(),'a') as fp_ef:
-			fp_ef.write("file_miss|"+device_id+"\n")
+			error_str='[!MISS] {}\n'.format(device_id)
+			fp_ef.write(error_str)
 
 		return "<ERROR>","<ERROR>" 
 
@@ -197,14 +198,11 @@ def get_ranks(rank_range):
 
 	for each_player in json_dic["ranks"]:
 
-		fl_file_skip = 0
-
-		# gathering a tuple of data for user 'i'
+		# gathering a tuple of data for each player 
 		data_extract = get_user_all_data(each_player)
 
 		# if a players data could not be fetched, then it's skipped
 		if data_extract == False:
-			fl_file_skip = 1
 			continue
 
 		# adding the player rank in the list
@@ -212,19 +210,16 @@ def get_ranks(rank_range):
 
 		# adding the tuple to the main list
 		l_name_dev.append(data_extract)
-
+ 
 		# deleting the user data json file once the work is done
 		if sys.argv[3] == "0":
 
-			#if os.path.exists(const_USER_JSON(each_player["device"])):
-			#	os.remove(const_USER_JSON(each_player["device"]))
-
-			if fl_file_skip == 1:
-				try:
-					os.remove(const_USER_JSON(each_player["device"]))
-				except:
-					with open(const_ERROR_FILE(),'a') as fp_ef:
-						fp_ef.write("delete_miss|" + each_player["device"] + "\n")
+			try:
+				os.remove(const_USER_JSON(each_player["device"]))
+			except:
+				with open(const_ERROR_FILE(),'a') as fp_ef:
+					error_str = '[!DELETE] {} | {}\n'.format(lim_cnt,each_player["device"])
+					fp_ef.write(error_str)
 
 		lim_cnt += 1
 
