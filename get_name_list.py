@@ -5,6 +5,7 @@ import requests
 import sys
 import os			# for deleting user json files
 import unicodecsv as csv	# for writing spl. characters into file in UNICODE
+import logging
 
 ########## ARGUMENTS ###########
 
@@ -14,9 +15,11 @@ import unicodecsv as csv	# for writing spl. characters into file in UNICODE
 
 ########## CONSTANTS ###########
 
+# number of player entries to be fetched in one go
 def const_NUM_DATA_POINT():
-	return 200
+	return 100
 
+# location where the data is to stored
 def const_DATA_DIR(num = sys.argv[2]):
 	return "data_%s/" % (num)
 
@@ -42,9 +45,22 @@ def const_SS_USER_URL_FORMAT():
 	return "http://%s/v2/profile/%s"
 
 def const_ERROR_FILE():
-	return "error_file_%s" % (sys.argv[2])
+	return "%serror_list.log" % (const_DATA_DIR())
+
+########## LOGGING ##################
+
+def set_logging_params(error_file_name):
+	logging.basicConfig(filename=error_file_name,
+	format='%(levelname)s | %(asctime)s | %(message)s',
+	datefmt='%m/%d/%Y %I:%M:%S %p',
+	level=logging.INFO)
+
+def print_and_log(error_str):
+	print(error_str)
+	logging.info(error_str)
 
 #####################################
+
 
 # fetches all data from main rank
 def fetch_data_all(rank_range):
@@ -53,16 +69,22 @@ def fetch_data_all(rank_range):
 
 	full_url = ss_url % (ss_ip, rank_range)
 
-	while True:
-		response_obj = requests.get(full_url)
+	try:
+		while True:
+			response_obj = requests.get(full_url)
 
-		if response_obj.status_code == 200:
-			json.dump(response_obj.json(),open(const_RANK_JSON(rank_range),"w"))
-			print("[RANK SUCCESS] Fetch for range %s finished" % (rank_range))
+			if response_obj.status_code == 200:
+				json.dump(response_obj.json(),open(const_RANK_JSON(rank_range),"w"))
+				print("RANK SUCCESS : FETCH FOR RANGE %s FINISHED" % (rank_range))
 
-			return
-		else:
-			print("[RANK ERROR] D/L FAILED FOR %s. TRYING AGAIN!" % (rank_range))
+				return True
+			else:
+				print("RANK ERROR : TRYING AGAIN FOR %s" % (rank_range))
+	except:
+		error_str = 'RANK D/L FAILED : {}'.format(rank_range)
+		print_and_log(error_str)
+
+		return False
 
 # fetches data for a particular player from the Skidstorm server
 # from the complete data, returns only the user ID
@@ -79,12 +101,17 @@ def fetch_data_userid(device_id):
 
 			if response_obj.status_code == 200:
 				json.dump(response_obj.json(),open(const_USER_JSON(device_id),"w"))
+
 				return True
 			else:
-				print("[USER ERROR] D/L FAILED FOR %s. TRYING AGAIN!" % (device_id))
+				print()
+				error_str = "USER ERROR : TRYING AGAIN FOR {}".format(device_id)
+				print_and_log(error_str)
 
 	except:
-		print("[USER ERROR] GAVE UP D/L FOR %s" % (device_id))
+		error_str = 'USER D/L FAILED : {} : FILE STATUS {}'.format(device_id,os.path.isfile(const_USER_JSON(device_id)))
+		print_and_log(error_str)
+
 		return False
 
 # checks if a variable is a non empty dictionary
@@ -111,11 +138,11 @@ def get_user_profile_details(device_id):
 	except:
 		# keeping a track of files which apparently have been downloaded
 		# but don't have any data inside it OR are incorrect JSON files
-		with open(const_ERROR_FILE(),'a') as fp_ef:
-			error_str='[!MISS] {}\n'.format(device_id)
-			fp_ef.write(error_str)
 
-		return "<ERROR>","<ERROR>" 
+		error_str='FILE OPEN ERROR : {}'.format(device_id)
+		print_and_log(error_str)
+
+		return False,False
 
 	return user_id,user_last_login
 
@@ -135,7 +162,7 @@ def get_rank_range_from_rank_choice(rank_choice):
 	upper_lim = rank_choice * num_data_points
 	lower_lim = upper_lim - (num_data_points - 1)
 
-	rank_range = "%d-%d" % (lower_lim,upper_lim)
+	rank_range = "{}-{}".format(lower_lim,upper_lim)
 
 	return rank_range
 
@@ -176,8 +203,14 @@ def get_user_all_data(each_player):
 		if return_val == False:
 			return False
 		else:
-			# from the complete data of the user, getting the user ID, legendary trophy and clan score
-			user_game_id, user_last_login  = get_user_profile_details(user_dev_id)
+			# getting the data which is only available in the user profile
+			tmp_user_game_id, tmp_user_last_login = get_user_profile_details(user_dev_id)
+
+			if tmp_user_game_id != False:
+				user_game_id, user_last_login = tmp_user_game_id, tmp_user_last_login
+
+			else:
+				return False
 
 	# creating a list for the current user
 	data_extract = [user_game_id,user_name,user_dev_id,user_country,clan_tag,clan_id,user_trophy,user_leg_trophy,clan_score,user_last_login]
@@ -202,25 +235,24 @@ def get_ranks(rank_range):
 		data_extract = get_user_all_data(each_player)
 
 		# if a players data could not be fetched, then it's skipped
-		if data_extract == False:
-			continue
+		if data_extract != False:
 
-		# adding the player rank in the list
-		data_extract.insert(0,lim_cnt)
+			# adding the player rank in the list
+			data_extract.insert(0,lim_cnt)
 
-		# adding the tuple to the main list
-		l_name_dev.append(data_extract)
- 
-		# deleting the user data json file once the work is done
-		if sys.argv[3] == "0":
+			# adding the tuple to the main list
+			l_name_dev.append(data_extract)
+	 
+			# deleting the user data json file once the work is done
+			if sys.argv[3] == "0":
 
-			try:
-				os.remove(const_USER_JSON(each_player["device"]))
-			except:
-				with open(const_ERROR_FILE(),'a') as fp_ef:
-					error_str = '[!DELETE] {} | {}\n'.format(lim_cnt,each_player["device"])
-					fp_ef.write(error_str)
+				try:
+					os.remove(const_USER_JSON(each_player["device"]))
+				except:
+					error_str = 'FILE DELETE FAILED : {} : {}'.format(each_player["device"], lim_cnt)
+					print_and_log(error_str)
 
+		# it indicates the current rank of the player
 		lim_cnt += 1
 
 	# writing the list in a csv file
@@ -228,9 +260,11 @@ def get_ranks(rank_range):
 	wr = csv.writer(fp, delimiter='|')
 	wr.writerows(l_name_dev)
 
-	print("[RANK SUCCESS] Players details of %s written to file" % (rank_range))
+	print("RANK SUCCESS : DETAILS OF %s SAVED" % (rank_range))
 
 def main():
+
+	set_logging_params(const_ERROR_FILE())
 
 	# input = 1 means rank 1-100
 	# input = 2 means rank 101-200 and so on
@@ -240,13 +274,18 @@ def main():
 	rank_range = get_rank_range_from_rank_choice(rank_choice)
 
 	# fetches complete rank data from Skidstorm Servers
-	fetch_data_all(rank_range)
+	ret_val = fetch_data_all(rank_range)
 
-	# extracting data from json
-	get_ranks(rank_range)
+	if ret_val != False:
+		# extracting data from json
+		get_ranks(rank_range)
 
-	# removing the json file containing all the details (Information already extracted)
-	os.remove(const_RANK_JSON(rank_range))
+		# removing the json file containing all the details (Information already extracted)
+		os.remove(const_RANK_JSON(rank_range))
+
+	else:
+		error_str = 'RANK ERROR : FILE MISSING {}'.format(rank_range)
+		print_and_log(error_str)
 
 if __name__ == "__main__":
 	main()
