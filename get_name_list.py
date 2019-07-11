@@ -129,12 +129,18 @@ def get_user_profile_details(device_id):
 
 	user_id 	= 0
 	user_last_login = 0
+	user_vip_level  = 0
+	user_vip_exp    = 0
 
 	try:
 		json_dic = json.load(open(json_user_file_name, 'r'))
 
 		user_id 	= json_dic["profile"]["id"]
 		user_last_login = json_dic["profile"]["last_login"]
+
+		user_economy    = json_dic["profile"]["economy"]
+		user_vip_level  = user_economy["vipInfo"]["vipMaxLevel"]
+		user_vip_exp    = user_economy["vipInfo"]["vipExp"]
 	except:
 		# keeping a track of files which apparently have been downloaded
 		# but don't have any data inside it OR are incorrect JSON files
@@ -144,7 +150,7 @@ def get_user_profile_details(device_id):
 
 		return False,False
 
-	return user_id,user_last_login
+	return [user_id,user_last_login,user_vip_level,user_vip_exp]
 
 # returns integer version of the string ranks
 def get_rank_range_integer(rank_range):
@@ -170,8 +176,6 @@ def get_rank_range_from_rank_choice(rank_choice):
 def get_user_all_data(each_player):
 
 	# from the main rank list, fetching the following details
-	user_game_id	= "0"
-	user_last_login = "0"
 	user_dev_id	= each_player["device"]
 	user_name	= each_player["username"]
 	user_country	= each_player["country"]
@@ -204,16 +208,13 @@ def get_user_all_data(each_player):
 			return False
 		else:
 			# getting the data which is only available in the user profile
-			tmp_user_game_id, tmp_user_last_login = get_user_profile_details(user_dev_id)
+			user_profile_data = get_user_profile_details(user_dev_id)
 
-			if tmp_user_game_id != False:
-				user_game_id, user_last_login = tmp_user_game_id, tmp_user_last_login
-
-			else:
+			if user_profile_data[0] == False:
 				return False
 
 	# creating a list for the current user
-	data_extract = [user_game_id,user_name,user_dev_id,user_country,clan_tag,clan_id,user_trophy,user_leg_trophy,clan_score,user_last_login]
+	data_extract = [user_profile_data[0],user_name,user_dev_id,user_country,clan_tag,clan_id,user_trophy,user_leg_trophy,clan_score] + user_profile_data[1:]
 
 	return data_extract
 
