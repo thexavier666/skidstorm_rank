@@ -61,7 +61,6 @@ def print_and_log(error_str):
 
 #####################################
 
-
 # fetches all data from main rank
 def fetch_data_all(rank_range):
 	ss_ip = const_SS_IP()
@@ -123,19 +122,20 @@ def is_dictionary(some_dict):
 
 	return False
 
+# extracts data for a given user
 def get_user_profile_details(device_id):
 
 	json_user_file_name = const_USER_JSON(device_id)
 
-	user_id 	= 0
+	user_id 		= 0
 	user_last_login = 0
 	user_vip_level  = 0
 	user_vip_exp    = 0
 
 	try:
-		json_dic = json.load(open(json_user_file_name, 'r'))
+		json_dic 		= json.load(open(json_user_file_name, 'r'))
 
-		user_id 	= json_dic["profile"]["id"]
+		user_id 		= json_dic["profile"]["id"]
 		user_last_login = json_dic["profile"]["last_login"]
 
 		user_economy    = json_dic["profile"]["economy"]
@@ -176,25 +176,27 @@ def get_rank_range_from_rank_choice(rank_choice):
 def get_user_all_data(each_player):
 
 	# from the main rank list, fetching the following details
-	user_dev_id	= each_player["device"]
-	user_name	= each_player["username"]
+	user_dev_id		= each_player["device"]
+	user_name		= each_player["username"]
 	user_country	= each_player["country"]
-	user_trophy	= each_player["rank"]
+	user_trophy		= each_player["rank"]
 	user_leg_trophy	= each_player["legendaryTrophies"]
-	clan_score	= "<NO_CLAN>"
-	clan_id		= "<NO_CLAN>"
-	clan_tag	= "<NO_CLAN>"
-	
+	clan_score		= "<NO_CLAN>"
+	clan_id			= "<NO_CLAN>"
+	clan_tag		= "<NO_CLAN>"
+
+	data_extract = []
+	user_profile_data = [0]
 
 	# checking if the user belongs to a clan
 	if clan_id != None:
 		user_profile	= each_player["profile"]
-		user_clan	= user_profile["clan"]
+		user_clan		= user_profile["clan"]
 
 		try:
 			clan_score	= user_clan["clanScore"]
-			clan_id         = user_clan["id"]
-			clan_tag        = user_clan["tag"]
+			clan_id		= user_clan["id"]
+			clan_tag	= user_clan["tag"]
 		except:
 			pass
 
@@ -212,9 +214,16 @@ def get_user_all_data(each_player):
 
 			if user_profile_data[0] == False:
 				return False
-
-	# creating a list for the current user
-	data_extract = [user_profile_data[0],user_name,user_dev_id,user_country,clan_tag,clan_id,user_trophy,user_leg_trophy,clan_score] + user_profile_data[1:]
+			else:
+				# creating a list for the current user
+				data_extract = [user_profile_data[0],user_name,user_dev_id,
+								user_country,clan_tag,clan_id,
+								user_trophy,user_leg_trophy,clan_score] + user_profile_data[1:]
+	else:
+		# no need to return any profile specific data
+		data_extract = [user_profile_data[0],user_name,user_dev_id,
+						user_country,clan_tag,clan_id,
+						user_trophy,user_leg_trophy,clan_score]
 
 	return data_extract
 
