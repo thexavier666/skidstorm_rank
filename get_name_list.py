@@ -200,6 +200,11 @@ def get_user_all_data(each_player):
 		except:
 			pass
 
+	# no need to return any profile specific data
+	data_extract = [user_name,user_dev_id,
+					user_country,clan_tag,clan_id,
+					user_trophy,user_leg_trophy,clan_score]
+
 	if sys.argv[3] == "0":
 		# fetching the complete data of the current user from his profile
 		# this causes another GET request
@@ -215,15 +220,11 @@ def get_user_all_data(each_player):
 			if user_profile_data[0] == False:
 				return False
 			else:
-				# creating a list for the current user
-				data_extract = [user_profile_data[0],user_name,user_dev_id,
-								user_country,clan_tag,clan_id,
-								user_trophy,user_leg_trophy,clan_score] + user_profile_data[1:]
-	else:
-		# no need to return any profile specific data
-		data_extract = [user_profile_data[0],user_name,user_dev_id,
-						user_country,clan_tag,clan_id,
-						user_trophy,user_leg_trophy,clan_score]
+				# inserting user ID in the beginning
+				data_extract.insert(0,user_profile_data[0])
+
+				# inserting rest of the data at the end
+				data_extract += user_profile_data[1:]
 
 	return data_extract
 
