@@ -11,7 +11,7 @@ master_db_file_name="${data_dir}master_db.csv"
 
 touch $master_db_file_name
 
-num_data_point=100
+num_data_point=250
 
 for (( i=1; i<=$num_pages; i++ ))
 do

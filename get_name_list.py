@@ -17,7 +17,7 @@ import logging
 
 # number of player entries to be fetched in one go
 def const_NUM_DATA_POINT():
-	return 100
+	return 250
 
 # location where the data is to stored
 def const_DATA_DIR(num = sys.argv[2]):
@@ -127,20 +127,35 @@ def get_user_profile_details(device_id):
 
 	json_user_file_name = const_USER_JSON(device_id)
 
-	user_id 		= 0
+	user_id         = 0
+	user_init_login = 0
 	user_last_login = 0
+	user_play_dur   = 0
+	user_game_played= 0
+	user_game_wins  = 0
+	user_maxrank    = 0
 	user_vip_level  = 0
 	user_vip_exp    = 0
+	user_diamonds   = 0
+	user_coins      = 0
+	user_gas        = 0
 
 	try:
-		json_dic 		= json.load(open(json_user_file_name, 'r'))
+		json_dic        = json.load(open(json_user_file_name, 'r'))
 
-		user_id 		= json_dic["profile"]["id"]
+		user_id         = json_dic["profile"]["id"]
+		user_init_login = json_dic["profile"]["created"]
 		user_last_login = json_dic["profile"]["last_login"]
+		user_play_dur   = json_dic["profile"]["profile"]["timePlayed"]
+		user_game_played= json_dic["profile"]["gamesPlayed"]
+		user_game_wins  = json_dic["profile"]["wins"]
+		user_maxrank    = json_dic["profile"]["economy"]["maxRank"]
+		user_vip_level  = json_dic["profile"]["economy"]["vipInfo"]["vipMaxLevel"]
+		user_vip_exp    = json_dic["profile"]["economy"]["vipInfo"]["vipExp"]
+		user_diamonds   = json_dic["profile"]["economy"]["diamonds"]
+		user_coins      = json_dic["profile"]["economy"]["coins"]
+		user_gas        = json_dic["profile"]["economy"]["gasolineBucket"]
 
-		user_economy    = json_dic["profile"]["economy"]
-		user_vip_level  = user_economy["vipInfo"]["vipMaxLevel"]
-		user_vip_exp    = user_economy["vipInfo"]["vipExp"]
 	except:
 		# keeping a track of files which apparently have been downloaded
 		# but don't have any data inside it OR are incorrect JSON files
@@ -150,7 +165,9 @@ def get_user_profile_details(device_id):
 
 		return False,False
 
-	return [user_id,user_last_login,user_vip_level,user_vip_exp]
+	return [user_id, user_init_login, user_last_login, user_play_dur, 
+                user_game_played, user_game_wins, user_maxrank, 
+                user_vip_level,user_vip_exp, user_diamonds, user_coins, user_gas]
 
 # returns integer version of the string ranks
 def get_rank_range_integer(rank_range):
@@ -178,7 +195,7 @@ def get_user_all_data(each_player):
 	# from the main rank list, fetching the following details
 	user_dev_id		= each_player["device"]
 	user_name		= each_player["username"]
-	user_country	= each_player["country"]
+	user_country            = each_player["country"]
 	user_trophy		= each_player["rank"]
 	user_leg_trophy	= each_player["legendaryTrophies"]
 	clan_score		= "<NO_CLAN>"
@@ -190,8 +207,7 @@ def get_user_all_data(each_player):
 
 	# checking if the user belongs to a clan
 	if clan_id != None:
-		user_profile	= each_player["profile"]
-		user_clan		= user_profile["clan"]
+		user_clan = each_player["profile"]["clan"]
 
 		try:
 			clan_score	= user_clan["clanScore"]
@@ -202,8 +218,8 @@ def get_user_all_data(each_player):
 
 	# no need to return any profile specific data
 	data_extract = [user_name,user_dev_id,
-					user_country,clan_tag,clan_id,
-					user_trophy,user_leg_trophy,clan_score]
+                user_country,clan_tag,clan_id,
+                user_trophy,user_leg_trophy,clan_score]
 
 	if sys.argv[3] == "0":
 		# fetching the complete data of the current user from his profile
